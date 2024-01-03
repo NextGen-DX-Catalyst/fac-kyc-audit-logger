@@ -1,0 +1,48 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: kyc-audit-logger
+  title: KYC Audit Logger
+  description: "Designed to oversee and log all activities within the KYC monitoring processes. This service is pivotal for ensuring compliance with regulatory standards, maintaining a high level of transparency, and safeguarding against potential fraudulent activities in customer verification and risk assessment processes."
+  annotations:
+    github.com/project-slug: ${{values.destination.owner + "/" + values.destination.repo}}
+spec:
+  type: service
+  lifecycle: production
+  owner: group:fraud-and-compliance
+  system: monitor
+  providesApis:
+    - kyc-audit-log
+  dependsOn:
+    - component:monitor
+    - component:transaction-monitoring
+---
+apiVersion: backstage.io/v1alpha1
+kind: API
+metadata:
+  name: kyc-audit-log
+  title: KYC Audit Log Definition
+  description: "Protobuf definition to consume files persisted from kyc-audit-logger, handling KYC audit logging."
+  tags:
+    - kyc
+    - audit
+    - protobuf
+spec:
+  type: protobuf
+  lifecycle: production
+  owner: group:fraud-and-compliance
+  system: monitor
+  definition: |
+    syntax = "proto3";
+
+    package fac_kyc_audit_logger;
+
+    // Represents a single KYC audit log entry
+    message KycAuditLogEntry {
+      int64 timestamp = 1;            // Unix timestamp of the log entry
+      string user_id = 2;             // Identifier of the user involved in the KYC process
+      string action = 3;              // Description of the KYC-related action
+      string customer_id = 4;         // Identifier of the customer being processed
+      string details = 5;             // Additional details or context about the action
+      // Additional fields can be added as required
+    }
